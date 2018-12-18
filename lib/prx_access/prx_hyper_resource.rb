@@ -87,7 +87,7 @@ module PRXAccess
 
   def api(options = {})
     opts = { root: cms_root, headers: default_headers }.merge(options)
-    if account = opts.delete(:account)
+    if !opts[:headers]['Authorization'] && account = opts.delete(:account)
       token = get_account_token(account)
       opts[:headers]['Authorization'] = "Bearer #{token}"
     end
