@@ -57,4 +57,15 @@ RSpec.describe PRXAccess do
 
     prx_access.api.post('under_score' => 1)
   end
+
+  it 'allows overriding the Authorization header' do
+    stub_request(:post, 'http://cms.prx.docker/api/v1').
+      with(body: '{}').
+      to_return(status: 200, body: '{"foo":"bar"}', headers: {})
+
+    expect(prx_access).not_to receive(:get_account_token)
+
+    prx_access.api({headders: {Authorization: 'foobar'}}).post()
+
+  end
 end
