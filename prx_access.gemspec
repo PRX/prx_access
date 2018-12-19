@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name          = "prx_access"
   spec.version       = PRXAccess::VERSION
   spec.authors       = ["Sam Vevang"]
-  spec.email         = ["sam.vevang@gmail.com"]
+  spec.email         = ["sam.vevang@prx.org"]
 
   spec.summary       = %q{PRX Access navigates HAL hypermedia resources on PRX services.}
   spec.description   = %q{PRX Access is a gem to supply authentication headers and descend the HAL hypermedia link tree on PRX's APIs.}
