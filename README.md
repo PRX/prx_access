@@ -6,8 +6,8 @@ Welcome to PRX Access. This gem allows programmatic to the PRX HAL apis.
 
 Add this line to your application's Gemfile:
 
-```
-ruby gem 'prx_access'
+```ruby
+gem 'prx_access'
 ```
 
 And then execute:
@@ -40,7 +40,7 @@ irb(main):005:0> podcasts_api.get.body
 
 It's also possible to chain the calls:
 
-```
+```ruby
 api(root: feeder_root)
 	.get
 	.podcasts.first
