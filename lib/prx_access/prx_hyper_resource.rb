@@ -1,5 +1,6 @@
 require 'hyperresource'
 require 'active_support/core_ext/hash'
+require 'oauth2'
 
 module PRXAccess
 
