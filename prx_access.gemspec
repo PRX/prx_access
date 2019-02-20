@@ -31,6 +31,8 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "hyperresource", "~> 0.9.4"
   spec.add_dependency "activesupport", ">= 4.0.0"
+  spec.add_dependency "oauth2", "~> 1.4.1"
+  spec.add_dependency "excon", "~> 0.62.0"
 
   spec.add_development_dependency "webmock"
   spec.add_development_dependency "pry"

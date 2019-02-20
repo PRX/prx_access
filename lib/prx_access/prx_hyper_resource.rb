@@ -1,5 +1,6 @@
 require 'hyperresource'
 require 'active_support/core_ext/hash'
+require 'oauth2'
 
 module PRXAccess
 
@@ -105,6 +106,10 @@ module PRXAccess
   def get_account_token(account)
     id = ENV['PRX_CLIENT_ID']
     se = ENV['PRX_SECRET']
+
+    raise 'Missing PRX_CLIENT_ID PRX_SECRET ENV vars' if id.nil? || se.nil?
+    raise 'Missing ID_HOST ENV var' if ENV['ID_HOST'].nil?
+
     oauth_options = { site: id_root, token_url: '/token' }
     client = OAuth2::Client.new(id, se, oauth_options) do |faraday|
       faraday.request  :url_encoded

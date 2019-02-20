@@ -10,13 +10,12 @@ RSpec.describe PRXAccess do
   let(:resource) { PRXAccess::PRXHyperResource.new }
 
   before do
-    allow(ENV).to receive(:[]).with("ID_HOST").and_return("id.prx.docker")
-    allow(ENV).to receive(:[]).with("FEEDER_HOST").and_return("feeder.prx.docker")
-    allow(ENV).to receive(:[]).with("CMS_HOST").and_return("cms.prx.docker")
-    allow(ENV).to receive(:[]).with("CRIER_HOST").and_return("feeder.prx.docker")
-
-    allow(ENV).to receive(:[]).with("http_proxy").and_return(nil)
-    allow(ENV).to receive(:[]).with("HTTP_PROXY").and_return(nil)
+    stub_const("ENV", ENV.to_h.merge({
+      "ID_HOST"     => 'id.prx.docker',
+      "FEEDER_HOST" => 'feeder.prx.docker',
+      "CMS_HOST"    => 'cms.prx.docker',
+      "CRIER_HOST"  => 'crier.prx.docker',
+    }))
   end
 
   it "has a version number" do
@@ -67,5 +66,23 @@ RSpec.describe PRXAccess do
 
     prx_access.api({headders: {Authorization: 'foobar'}}).post()
 
+  end
+
+  describe '#get_account_token' do
+    it 'throws an exception for missing PRX OAuth Tokens' do
+      expect{ prx_access.api(root: prx_access.cms_root, account: 1)}.to raise_exception(RuntimeError, 'Missing PRX_CLIENT_ID PRX_SECRET ENV vars')
+    end
+
+    it 'throws an exception for missing ID_HOST env var' do
+      stub_const("ENV", ENV.
+        to_h.
+        merge({
+          'PRX_CLIENT_ID' => 'tok',
+          'PRX_SECRET' => 'tok',
+          'ID_HOST' => nil
+        }))
+
+      expect{ prx_access.api(root: prx_access.cms_root, account: 1)}.to raise_exception(RuntimeError, 'Missing ID_HOST ENV var')
+    end
   end
 end
