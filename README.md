@@ -1,6 +1,6 @@
 # PrxAccess
 
-Welcome to PRX Access. This gem allows programmatic to the PRX HAL apis.
+Welcome to PRX Access. This gem allows programmatic api access to the PRX HAL apis.
 
 ## Installation
 
