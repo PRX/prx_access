@@ -89,7 +89,7 @@ module PRXAccess
   def api(options = {})
     opts = { root: cms_root, headers: default_headers }.merge(options)
     if !opts[:headers]['Authorization'] && account = opts.delete(:account)
-      token = get_account_token(account)
+      token = get_account_token(account, opts.delete(:scope))
       opts[:headers]['Authorization'] = "Bearer #{token}"
     end
 
@@ -103,7 +103,7 @@ module PRXAccess
     PRXHyperResource.new_from(body: body, resource: resource, link: link)
   end
 
-  def get_account_token(account)
+  def get_account_token(account, scope = nil)
     id = ENV['PRX_CLIENT_ID']
     se = ENV['PRX_SECRET']
 
@@ -115,7 +115,11 @@ module PRXAccess
       faraday.request  :url_encoded
       faraday.adapter  :excon
     end
-    client.client_credentials.get_token(account: account).token
+    if scope
+      client.client_credentials.get_token(account: account, scope: scope).token
+    else
+      client.client_credentials.get_token(account: account).token
+    end
   end
 
   def id_root
