@@ -1,9 +1,9 @@
-require 'hyperresource'
-require 'active_support/core_ext/hash'
-require 'oauth2'
+require "hyperresource"
+require "active_support/core_ext/hash"
+require "oauth2"
+require "faraday/excon"
 
 module PRXAccess
-
   class PRXHyperResource < HyperResource
     def incoming_body_filter(hash)
       super(hash.deep_transform_keys { |key| key.to_s.underscore })
@@ -16,104 +16,101 @@ module PRXAccess
     class Link < HyperResource::Link
       attr_accessor :type, :profile
 
-      def initialize(resource, link_spec={})
+      def initialize(resource, link_spec = {})
         super
-        self.type = link_spec['type']
-        self.profile = link_spec['profile']
+        self.type = link_spec["type"]
+        self.profile = link_spec["profile"]
       end
 
       def where(params)
         super.tap do |res|
-          res.type = self.type
-          res.profile = self.profile
+          res.type = type
+          res.profile = profile
         end
       end
 
       def headers(*args)
         super.tap do |res|
           if args.count > 0
-            res.type = self.type
-            res.profile = self.profile
+            res.type = type
+            res.profile = profile
           end
         end
       end
 
-      def post_response(attrs=nil)
-        attrs ||= self.resource.attributes
-        attrs = (self.resource.default_attributes || {}).merge(attrs)
+      def post_response(attrs = nil)
+        attrs ||= resource.attributes
+        attrs = (resource.default_attributes || {}).merge(attrs)
 
         # adding this line to call outgoing_body_filter
         attrs = resource.outgoing_body_filter(attrs)
 
-        response = faraday_connection.post do |req|
-          req.body = self.resource.adapter.serialize(attrs)
+        faraday_connection.post do |req|
+          req.body = resource.adapter.serialize(attrs)
         end
-        response
       end
 
-      def put_response(attrs=nil)
-        attrs ||= self.resource.attributes
-        attrs = (self.resource.default_attributes || {}).merge(attrs)
+      def put_response(attrs = nil)
+        attrs ||= resource.attributes
+        attrs = (resource.default_attributes || {}).merge(attrs)
 
         # adding this line to call outgoing_body_filter
         attrs = resource.outgoing_body_filter(attrs)
 
-        response = faraday_connection.put do |req|
-          req.body = self.resource.adapter.serialize(attrs)
+        faraday_connection.put do |req|
+          req.body = resource.adapter.serialize(attrs)
         end
-        response
       end
 
-      def patch_response(attrs=nil)
-        attrs ||= self.resource.attributes.changed_attributes
-        attrs = (self.resource.default_attributes || {}).merge(attrs)
+      def patch_response(attrs = nil)
+        attrs ||= resource.attributes.changed_attributes
+        attrs = (resource.default_attributes || {}).merge(attrs)
 
         # adding this line to call outgoing_body_filter
         attrs = resource.outgoing_body_filter(attrs)
 
-        response = faraday_connection.patch do |req|
-          req.body = self.resource.adapter.serialize(attrs)
+        faraday_connection.patch do |req|
+          req.body = resource.adapter.serialize(attrs)
         end
-        response
       end
     end
   end
 
   def default_headers
     {
-      'Content-Type' => 'application/json',
-      'Accept' =>  'application/json'
+      "Content-Type" => "application/json",
+      "Accept" => "application/json"
     }
   end
 
   def api(options = {})
-    opts = { root: cms_root, headers: default_headers }.merge(options)
-    if !opts[:headers]['Authorization'] && account = opts.delete(:account)
+    opts = {root: cms_root, headers: default_headers}.merge(options)
+    if !opts[:headers]["Authorization"] && (account = opts.delete(:account))
       token = get_account_token(account, opts.delete(:scope))
-      opts[:headers]['Authorization'] = "Bearer #{token}"
+      opts[:headers]["Authorization"] = "Bearer #{token}"
     end
 
     PRXHyperResource.new(opts)
   end
 
   def api_resource(body, root = cms_root)
-    href = body['_links']['self']['href']
+    href = body["_links"]["self"]["href"]
     resource = api(root: root)
     link = PRXHyperResource::Link.new(resource, href: href)
     PRXHyperResource.new_from(body: body, resource: resource, link: link)
   end
 
   def get_account_token(account, scope = nil)
-    id = ENV['PRX_CLIENT_ID']
-    se = ENV['PRX_SECRET']
+    id = ENV["PRX_CLIENT_ID"]
+    se = ENV["PRX_SECRET"]
 
-    raise 'Missing PRX_CLIENT_ID PRX_SECRET ENV vars' if id.nil? || se.nil?
-    raise 'Missing ID_HOST ENV var' if ENV['ID_HOST'].nil?
+    raise "Missing PRX_CLIENT_ID PRX_SECRET ENV vars" if id.nil? || se.nil?
+    raise "Missing ID_HOST ENV var" if ENV["ID_HOST"].nil?
 
-    oauth_options = { site: id_root, token_url: '/token' }
+    oauth_options = {site: id_root, token_url: "/token"}
     client = OAuth2::Client.new(id, se, oauth_options) do |faraday|
-      faraday.request  :url_encoded
-      faraday.adapter  :excon
+      faraday.request :url_encoded
+      faraday.adapter :excon
     end
     if scope
       client.client_credentials.get_token(account: account, scope: scope).token
@@ -123,25 +120,25 @@ module PRXAccess
   end
 
   def id_root
-    root_uri ENV['ID_HOST']
+    root_uri ENV["ID_HOST"]
   end
 
   private
 
   def method_missing(method, *args)
-    if method =~ /_root$/
-      root_uri ENV[method.to_s.sub(/_root$/, '_HOST').upcase], '/api/v1'
+    if /_root$/.match?(method)
+      root_uri ENV[method.to_s.sub(/_root$/, "_HOST").upcase], "/api/v1"
     else
       super
     end
   end
 
   def respond_to_missing?(method, include_private = false)
-    method.to_s.ends_with?('_root') || super
+    method.to_s.ends_with?("_root") || super
   end
 
-  def root_uri(host, path = '')
-    if host =~ /\.org|\.tech/
+  def root_uri(host, path = "")
+    if /\.org|\.tech/.match?(host)
       URI::HTTPS.build(host: host, path: path).to_s
     else
       URI::HTTP.build(host: host, path: path).to_s

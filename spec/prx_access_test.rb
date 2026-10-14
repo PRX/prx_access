@@ -1,5 +1,4 @@
-require 'prx_access'
+require "prx_access"
 
 describe PRXAccess do
-
 end
