@@ -1,6 +1,7 @@
 require 'hyperresource'
 require 'active_support/core_ext/hash'
 require 'oauth2'
+require 'faraday/excon'
 
 module PRXAccess
 

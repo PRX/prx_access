@@ -31,12 +31,13 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "hyperresource", "~> 0.9.4"
   spec.add_dependency "activesupport", ">= 4.0.0"
-  spec.add_dependency "oauth2", "~> 1.4.1"
-  spec.add_dependency "excon", "~> 0.88.0"
+  spec.add_dependency "oauth2", "~> 2.0", ">= 2.0.22"
+  spec.add_dependency "excon", ">= 1.5.0"
+  spec.add_dependency "faraday-excon"
 
   spec.add_development_dependency "webmock"
   spec.add_development_dependency "pry"
-  spec.add_development_dependency "bundler", "~> 2.2.26"
-  spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "bundler", ">= 2.2.26"
+  spec.add_development_dependency "rake", ">= 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
 end

@@ -84,5 +84,24 @@ RSpec.describe PRXAccess do
 
       expect{ prx_access.api(root: prx_access.cms_root, account: 1)}.to raise_exception(RuntimeError, 'Missing ID_HOST ENV var')
     end
+
+    it 'gets a token from ID and uses it as a bearer token' do
+      stub_const("ENV", ENV.
+        to_h.
+        merge({
+          'ID_HOST' => 'id.prx.docker',
+          'CMS_HOST' => 'cms.prx.docker',
+          'PRX_CLIENT_ID' => 'id',
+          'PRX_SECRET' => 'secret'
+        }))
+      stub_request(:post, 'http://id.prx.docker/token').
+        with(basic_auth: ['id', 'secret'], body: {'grant_type' => 'client_credentials', 'account' => '1'}).
+        to_return(status: 200, body: '{"access_token":"tok","token_type":"bearer"}', headers: {'Content-Type' => 'application/json'})
+      stub_request(:get, 'http://cms.prx.docker/api/v1').
+        with(headers: {'Authorization' => 'Bearer tok'}).
+        to_return(status: 200, body: '{"fooBar":"baz"}', headers: {'Content-Type' => 'application/json'})
+
+      expect(prx_access.api(account: 1).get.foo_bar).to eq('baz')
+    end
   end
 end
