@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "hyperresource", "~> 0.9.4"
+  spec.add_dependency "prx_hyperresource", "~> 1.0"
   spec.add_dependency "activesupport", ">= 4.0.0"
   spec.add_dependency "oauth2", "~> 2.0", ">= 2.0.22"
   spec.add_dependency "excon", ">= 1.5.0"
